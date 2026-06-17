@@ -97,13 +97,13 @@ static FString StreetNameFor(bool bBoard, int32 Street)
 
 void SHorseGameWidget::Construct(const FArguments& InArgs)
 {
-	const FSlateFontInfo BannerFont = FCoreStyle::GetDefaultFontStyle("Bold", 26);
-	const FSlateFontInfo InfoFont = FCoreStyle::GetDefaultFontStyle("Regular", 20);
+	const FSlateFontInfo BannerFont = FCoreStyle::GetDefaultFontStyle("Bold", 40);
+	const FSlateFontInfo InfoFont = FCoreStyle::GetDefaultFontStyle("Regular", 30);
 
 	ChildSlot
 	[
 		SNew(SBorder)
-		.HAlign(HAlign_Fill).VAlign(VAlign_Fill)
+		.HAlign(HAlign_Center).VAlign(VAlign_Center)
 		.BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
 		.BorderBackgroundColor(FLinearColor(0.05f, 0.32f, 0.16f, 1.f))
 		.Padding(FMargin(16))
@@ -563,9 +563,9 @@ FReply SHorseGameWidget::OnNewGame()
 
 TSharedRef<SWidget> SHorseGameWidget::MakeCardTile(int32 Card, bool bFaceUp) const
 {
-	const FSlateFontInfo CardFont = FCoreStyle::GetDefaultFontStyle("Bold", 26);
+	const FSlateFontInfo CardFont = FCoreStyle::GetDefaultFontStyle("Bold", 40);
 	const bool hidden = !bFaceUp || Card < 0;
-	return SNew(SBox).WidthOverride(72).HeightOverride(100)
+	return SNew(SBox).WidthOverride(112).HeightOverride(156)
 	[
 		SNew(SBorder)
 		.HAlign(HAlign_Center).VAlign(VAlign_Center)
@@ -619,15 +619,15 @@ void SHorseGameWidget::Refresh()
 
 	// Action buttons
 	ActionRow->ClearChildren();
-	const FSlateFontInfo BtnFont = FCoreStyle::GetDefaultFontStyle("Bold", 20);
+	const FSlateFontInfo BtnFont = FCoreStyle::GetDefaultFontStyle("Bold", 32);
 
 	auto AddButton = [&](const FString& Label, bool bEnabled, FReply(SHorseGameWidget::*Handler)())
 	{
-		ActionRow->AddSlot().AutoWidth().Padding(8)
+		ActionRow->AddSlot().AutoWidth().Padding(10)
 		[
 			SNew(SButton)
 			.HAlign(HAlign_Center).VAlign(VAlign_Center)
-			.ContentPadding(FMargin(24, 12))
+			.ContentPadding(FMargin(40, 22))
 			.IsEnabled(bEnabled)
 			.OnClicked(this, Handler)
 			[ SNew(STextBlock).Font(BtnFont).Text(FText::FromString(Label)) ]
