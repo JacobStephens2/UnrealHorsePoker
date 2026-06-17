@@ -1,0 +1,25 @@
+# Unreal Engine generated/build directories
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/
+
+# Packaged output (APKs are >100MB; exceeds GitHub file limit)
+Archive/
+
+# IDE / project files
+.vs/
+.vscode/
+.idea/
+*.sln
+*.xcodeproj/
+*.xcworkspace/
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.suo
+
+# OS cruft
+.DS_Store
