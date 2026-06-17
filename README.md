@@ -19,6 +19,10 @@ Heads-up HORSE poker against a simple AI, with chips and fixed-limit betting. Ea
 - Opponent's hole cards stay hidden until showdown; in the stud games their up-cards are visible as they're dealt.
 - Hi-Lo hands split the pot; Razz awards the low; the rest award the high. Win all the opponent's chips (or lose yours) to end the game.
 
+### Audio
+
+Looping background music plus sound effects (card deal, chip/bet, check, win, lose), all procedurally synthesized — see `SourceAudio/` and the generator scripts `gen_music.py` / `gen_sfx.py`. The WAVs are imported into `/Game/Audio` (the music flagged looping) via `import_audio.py`; the music plays through an `AudioComponent` (held referenced so the looping sound isn't orphaned) and SFX fire via `PlaySound2D`.
+
 ## Hand evaluation
 
 `Source/CardGame/PokerEval.h` is a dependency-free C++ evaluator (so it can be unit-tested outside the engine):

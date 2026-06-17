@@ -3,10 +3,12 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
+#include "UObject/StrongObjectPtr.h"
 
 class STextBlock;
 class SHorizontalBox;
 class SVerticalBox;
+class USoundBase;
 
 /**
  * HORSE poker, heads-up vs a simple AI, with fixed-limit betting.
@@ -109,6 +111,15 @@ private:
 	TSharedRef<class SWidget> MakeCardTile(int32 Card, bool bFaceUp) const;
 	void FillCardRow(TSharedPtr<SHorizontalBox> Row, const TArray<int32>& Cards,
 		const TArray<bool>* Up, bool bRevealAll) const;
+
+	// ---- Audio ----
+	TStrongObjectPtr<USoundBase> SfxDeal;
+	TStrongObjectPtr<USoundBase> SfxChip;
+	TStrongObjectPtr<USoundBase> SfxCheck;
+	TStrongObjectPtr<USoundBase> SfxWin;
+	TStrongObjectPtr<USoundBase> SfxLose;
+	void LoadAudio();
+	void PlaySfx(USoundBase* Sound);
 
 	// ---- Card / hand helpers ----
 	static FString CardLabel(int32 Card);

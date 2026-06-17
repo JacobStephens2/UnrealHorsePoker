@@ -17,4 +17,8 @@ protected:
 
 private:
 	TSharedPtr<class SHorseGameWidget> GameWidget;
+
+	// Held so the looping background music isn't garbage-collected / orphaned.
+	UPROPERTY()
+	TObjectPtr<class UAudioComponent> MusicComponent = nullptr;
 };

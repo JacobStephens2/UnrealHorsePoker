@@ -8,6 +8,10 @@
 #include "Widgets/Layout/SSpacer.h"
 #include "Styling/CoreStyle.h"
 #include "Math/UnrealMathUtility.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 #include <vector>
 
 #define LOCTEXT_NAMESPACE "HorseGame"
@@ -144,7 +148,26 @@ void SHorseGameWidget::Construct(const FArguments& InArgs)
 		]
 	];
 
+	LoadAudio();
 	NewGame();
+}
+
+// ---------------- Audio ----------------
+
+void SHorseGameWidget::LoadAudio()
+{
+	SfxDeal.Reset(LoadObject<USoundBase>(nullptr, TEXT("/Game/Audio/sfx_deal.sfx_deal")));
+	SfxChip.Reset(LoadObject<USoundBase>(nullptr, TEXT("/Game/Audio/sfx_chip.sfx_chip")));
+	SfxCheck.Reset(LoadObject<USoundBase>(nullptr, TEXT("/Game/Audio/sfx_check.sfx_check")));
+	SfxWin.Reset(LoadObject<USoundBase>(nullptr, TEXT("/Game/Audio/sfx_win.sfx_win")));
+	SfxLose.Reset(LoadObject<USoundBase>(nullptr, TEXT("/Game/Audio/sfx_lose.sfx_lose")));
+}
+
+void SHorseGameWidget::PlaySfx(USoundBase* Sound)
+{
+	if (!Sound) return;
+	UWorld* W = (GEngine && GEngine->GameViewport) ? GEngine->GameViewport->GetWorld() : nullptr;
+	if (W) UGameplayStatics::PlaySound2D(W, Sound);
 }
 
 // ---------------- Flow ----------------
@@ -193,6 +216,7 @@ void SHorseGameWidget::StartHand()
 	PlayerChips -= Ante; AIChips -= Ante; Pot = Ante * 2;
 
 	DealInitial();
+	PlaySfx(SfxDeal.Get());
 	CurrentBetSize = SmallBet;
 	BeginStreetBetting();
 }
@@ -259,6 +283,7 @@ void SHorseGameWidget::AdvanceStreet()
 		AICards.Add(DealCard());     AIUp.Add(up);
 	}
 
+	PlaySfx(SfxDeal.Get());
 	BeginStreetBetting();
 }
 
@@ -365,11 +390,13 @@ void SHorseGameWidget::AITurn()
 		{
 			AIPut(CurrentBetSize); ++RaisesThisStreet; ++ActionsThisStreet;
 			StatusLine = FString::Printf(TEXT("Opponent bets $%d."), CurrentBetSize);
+			PlaySfx(SfxChip.Get());
 		}
 		else
 		{
 			++ActionsThisStreet;
 			StatusLine = TEXT("Opponent checks.");
+			PlaySfx(SfxCheck.Get());
 		}
 	}
 	else
@@ -386,11 +413,13 @@ void SHorseGameWidget::AITurn()
 		{
 			AIPut(toCall + CurrentBetSize); ++RaisesThisStreet; ++ActionsThisStreet;
 			StatusLine = FString::Printf(TEXT("Opponent raises to $%d."), AICommitted);
+			PlaySfx(SfxChip.Get());
 		}
 		else
 		{
 			AIPut(toCall); ++ActionsThisStreet;
 			StatusLine = TEXT("Opponent calls.");
+			PlaySfx(SfxChip.Get());
 		}
 	}
 
@@ -421,6 +450,7 @@ void SHorseGameWidget::Showdown()
 	const std::vector<int> board = ToStd(Board);
 
 	const int32 thePot = Pot;
+	const int32 chipsBefore = PlayerChips;
 
 	if (VariantIndex == V_Holdem || VariantIndex == V_Stud || VariantIndex == V_Omaha)
 	{
@@ -490,6 +520,7 @@ void SHorseGameWidget::Showdown()
 			pPay, aPay, *FString(poker::HighCatName(phi.cat)), *FString(poker::HighCatName(ahi.cat)), *lowStr);
 	}
 
+	PlaySfx(PlayerChips > chipsBefore ? SfxWin.Get() : SfxLose.Get());
 	StatusLine = TEXT("Hand complete.");
 	Refresh();
 }
@@ -501,6 +532,7 @@ void SHorseGameWidget::EndHandByFold(bool bPlayerFolded)
 	const int32 thePot = Pot;
 	if (bPlayerFolded) { AwardPot(0, thePot); ResultLine = FString::Printf(TEXT("You folded. Opponent takes $%d."), thePot); }
 	else { AwardPot(thePot, 0); ResultLine = FString::Printf(TEXT("Opponent folds. You take $%d!"), thePot); }
+	PlaySfx(bPlayerFolded ? SfxLose.Get() : SfxWin.Get());
 	Refresh();
 }
 
@@ -522,6 +554,7 @@ FReply SHorseGameWidget::OnCheckCall()
 	if (PlayerChips == 0 || AIChips == 0) bAllIn = true;
 	++ActionsThisStreet;
 	StatusLine = (toCall == 0) ? TEXT("You check.") : FString::Printf(TEXT("You call $%d."), amt);
+	PlaySfx(toCall == 0 ? SfxCheck.Get() : SfxChip.Get());
 	bAwaitingPlayer = false;
 	ProcessAfterPlayerAction();
 	if (bHandActive && bAwaitingPlayer) Refresh();
@@ -539,6 +572,7 @@ FReply SHorseGameWidget::OnBetRaise()
 	++RaisesThisStreet; ++ActionsThisStreet;
 	StatusLine = (toCall == 0) ? FString::Printf(TEXT("You bet $%d."), amt)
 	                           : FString::Printf(TEXT("You raise to $%d."), PlayerCommitted);
+	PlaySfx(SfxChip.Get());
 	bAwaitingPlayer = false;
 	ProcessAfterPlayerAction();
 	if (bHandActive && bAwaitingPlayer) Refresh();
