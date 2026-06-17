@@ -1,5 +1,5 @@
 #include "CardGamePlayerController.h"
-#include "SCardGameWidget.h"
+#include "SHorseGameWidget.h"
 #include "Widgets/SWeakWidget.h"
 #include "Engine/GameViewportClient.h"
 
@@ -14,7 +14,7 @@ void ACardGamePlayerController::BeginPlay()
 
 	if (GEngine && GEngine->GameViewport)
 	{
-		GameWidget = SNew(SCardGameWidget);
+		GameWidget = SNew(SHorseGameWidget);
 
 		GEngine->GameViewport->AddViewportWidgetContent(
 			SNew(SWeakWidget).PossiblyNullContent(GameWidget.ToSharedRef()));

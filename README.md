@@ -1,25 +1,42 @@
-# Card Game (Unreal Engine, Android)
+# HORSE Poker (Unreal Engine, Android)
 
-A sample 2D card game built with **Unreal Engine 5.7**, packaged for **Android**. The UI is written entirely in C++ with Slate — no Blueprint assets — so the whole game is plain text in `Source/`.
+A sample **HORSE poker** game built with **Unreal Engine 5.7**, packaged for **Android**. The UI is written entirely in C++ with Slate — no Blueprint assets — so the whole game is plain text in `Source/`.
 
-## The game — "Higher or Lower"
+## The game
 
-- A shuffled 52-card deck, a face-up **table card**, and a **hand of 5** cards shown as tappable buttons (red/black suits, ♠ ♥ ♦ ♣).
-- Tap a hand card that **ranks higher** than the table card to score a point. The played card becomes the new table card and a replacement is drawn.
-- Score and remaining-deck count show at the top. When the deck and hand are exhausted the round ends — tap **New Game** to reshuffle.
-- Portrait orientation, green felt background.
+Heads-up HORSE poker against a simple AI, with chips and fixed-limit betting. Each hand rotates through the five variants:
+
+| | Variant | Deal | Goal |
+|---|---------|------|------|
+| **H** | Texas Hold'em | 2 hole + 5 community | best high hand |
+| **O** | Omaha (Hi) | 4 hole + 5 community, use **exactly** 2 + 3 | best high hand |
+| **R** | Razz | 7-card stud | best **A-5 low** (straights/flushes ignored, Ace low) |
+| **S** | Seven-card Stud | 7 cards | best high hand |
+| **E** | Stud Hi-Lo (8 or better) | 7 cards | pot **split** between best high and best qualifying low (8-or-better) |
+
+- Antes each hand, then fixed-limit betting on every street (pre-flop/flop/turn/river for the board games; 3rd→7th street for the stud games). Small bet early, big bet on later streets, capped raises.
+- Tap **Fold / Check / Call / Bet / Raise**. The opponent acts by a hand-strength heuristic per variant (high strength, low strength, or the better of the two for Hi-Lo).
+- Opponent's hole cards stay hidden until showdown; in the stud games their up-cards are visible as they're dealt.
+- Hi-Lo hands split the pot; Razz awards the low; the rest award the high. Win all the opponent's chips (or lose yours) to end the game.
+
+## Hand evaluation
+
+`Source/CardGame/PokerEval.h` is a dependency-free C++ evaluator (so it can be unit-tested outside the engine):
+
+- Best 5-of-N **high** hand (royal/straight flush down to high card, with correct kicker tie-breaks and the A-2-3-4-5 wheel).
+- **Omaha** high using exactly two hole cards + three board cards.
+- **A-5 lowball** for Razz and the low half of Stud Hi-Lo, with the **eight-or-better** qualifier.
 
 ## Layout
 
 | Path | Purpose |
 |------|---------|
-| `Source/CardGame/SCardGameWidget.*` | The Slate card-game UI and all game logic |
+| `Source/CardGame/PokerEval.h` | Pure-C++ poker hand evaluation (high / Omaha / A-5 low / 8-or-better) |
+| `Source/CardGame/SHorseGameWidget.*` | The Slate UI, HORSE rotation, betting state machine, AI, showdown/pot split |
 | `Source/CardGame/CardGamePlayerController.*` | Adds the widget to the viewport, sets touch/UI input |
 | `Source/CardGame/CardGameGameModeBase.*` | Default game mode wiring |
-| `Source/CardGame.Target.cs`, `CardGameEditor.Target.cs` | Game / Editor build targets (`BuildSettingsVersion.V6`) |
 | `Config/` | Project + Android packaging settings |
 | `Content/Maps/Main.umap` | Minimal startup level |
-| `make_map.py` | Headless map creation (Python commandlet) |
 
 ## Building the Android APK
 
@@ -43,6 +60,12 @@ Output: `Archive/Android_ASTC/CardGame-arm64.apk`. Install with:
 
 ```bash
 adb install -r Archive/Android_ASTC/CardGame-arm64.apk
+```
+
+The evaluator can be sanity-checked on its own:
+
+```bash
+clang++ -std=c++17 test_poker.cpp -o test_poker && ./test_poker
 ```
 
 > `bPackageDataInsideApk=True` (in `Config/DefaultEngine.ini`) bundles game data into the APK so a sideloaded build runs without an OBB file or Google Play Store key.

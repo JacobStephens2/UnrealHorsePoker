@@ -16,5 +16,5 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	TSharedPtr<class SCardGameWidget> GameWidget;
+	TSharedPtr<class SHorseGameWidget> GameWidget;
 };
